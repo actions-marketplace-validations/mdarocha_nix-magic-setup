@@ -19,6 +19,29 @@ Certain features also only work in the context of a cloned repository, so they r
 - `actions: read` - required by `cache-nix-action` to read Github Actions cache and purge old cache entries
 - `pull-requests: write` - required by `comment-flake-lock-changelog` to comment on PRs
 
+## Example usage
+
+```yaml
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mdarocha/nix-magic-setup@main
+      - run: nix flake check
+```
+
 ## In the future
 
 In the future, this action is planned to also:
