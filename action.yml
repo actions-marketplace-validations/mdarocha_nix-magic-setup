@@ -44,7 +44,7 @@ runs:
       with:
         use_nix_profile: true
 
-    - uses: mdarocha/comment-flake-lock-changelog@5dce74680d78937bc3d0e1a9bbccce9cec57d838 # v0.9.3
+    - uses: mdarocha/comment-flake-lock-changelog@efdefdfb650727e3ce64a745426f836c45ea0337 # v1.0.0
       if: github.event_name == 'pull_request'
       with:
         pull-request-number: ${{ github.event.pull_request.number }}
