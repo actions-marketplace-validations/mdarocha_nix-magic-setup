@@ -1,7 +1,14 @@
 # nix-magic-setup
-GitHub Actions to set up Nix and related tooling in an opinionated way.
+[![GitHub Actions Marketplace](https://img.shields.io/badge/Marketplace-nix--magic--setup-blue?logo=github)](https://github.com/marketplace/actions/nix-magic-setup)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-This is a composite action that combines:
+One action to install Nix, cache builds, and automate common flake workflows in GitHub Actions.
+
+Managing Nix in GitHub Actions means wiring together multiple separate actions, getting cache
+config right, and re-doing it for every new repo. nix-magic-setup bundles all of that into a
+single drop-in action.
+
+## Features
 
 - Installing Nix using [cachix/install-nix-action](https://github.com/cachix/install-nix-action)
 - Caching Nix derivations using [nix-community/cache-nix-action](https://github.com/nix-community/cache-nix-action)
@@ -18,6 +25,7 @@ Certain features also only work in the context of a cloned repository, so they r
 
 - `actions: read` - required by `cache-nix-action` to read GitHub Actions cache and purge old cache entries
 - `pull-requests: write` - required by `comment-flake-lock-changelog` to comment on PRs
+- `contents: read` - remember to add it when setting permissions, to make sure the actions has permissions required to clone the repo
 
 ## Example usage
 
@@ -38,11 +46,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: mdarocha/nix-magic-setup@main
+      - uses: mdarocha/nix-magic-setup@v1.0.0
       - run: nix flake check
 ```
 
-## In the future
+## Roadmap
 
 In the future, this action is planned to also:
 - Comment on PRs with [nix-diff](https://github.com/Gabriella439/nix-diff)
