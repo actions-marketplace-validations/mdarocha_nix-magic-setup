@@ -1,0 +1,50 @@
+name: "nix-magic-setup"
+description: "Github Actions to setup Nix and related tooling in an opinionated way"
+branding:
+  icon: "box"
+  color: "blue"
+inputs:
+  token:
+    description: "Github authentication token to use"
+    required: false
+    default: ${{ github.token }}
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      uses: cachix/install-nix-action@19effe9fe722874e6d46dd7182e4b8b7a43c4a99 # v31.10.0
+      with:
+        github_access_token: ${{ inputs.token }}
+
+    - name: Setup Nix Cache
+      uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+      with:
+        nix: true
+        save: true
+        primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+        restore-prefixes-first-match: nix-${{ runner.os }}-
+        gc-max-store-size: 2G
+        purge: true
+        purge-prefixes: nix-${{ runner.os }}-
+        purge-primary-key: never
+        purge-last-accessed: "PT4H"
+
+    - name: Check for .envrc
+      id: check-envrc
+      shell: bash
+      run: |
+        if [ -f "${{ github.workspace }}/.envrc" ]; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Setup direnv shell
+      if: steps.check-envrc.outputs.exists == 'true'
+      uses: aldoborrero/direnv-nix-action@6f1d68ccf8d5477a1954e10464d169112d17dcd6 # v2
+      with:
+        use_nix_profile: true
+
+    - uses: mdarocha/comment-flake-lock-changelog@5dce74680d78937bc3d0e1a9bbccce9cec57d838 # v0.9.3
+      if: github.event_name == 'pull_request'
+      with:
+        pull-request-number: ${{ github.event.pull_request.number }}
+        token: ${{ inputs.token }}
