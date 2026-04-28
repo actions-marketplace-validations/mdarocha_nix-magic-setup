@@ -12,7 +12,7 @@ single drop-in action.
 
 - Installing Nix using [cachix/install-nix-action](https://github.com/cachix/install-nix-action)
 - Caching Nix derivations using [nix-community/cache-nix-action](https://github.com/nix-community/cache-nix-action)
-- Automagically setting up environments from `.envrc` using [aldoborrero/direnv-nix-action](https://github.com/aldoborrero/direnv-nix-action)
+- Automagically setting up environments from `.envrc` using direnv
 - Commenting with [mdarocha/comment-flake-lock-changelog](https://github.com/mdarocha/comment-flake-lock-changelog) when a PR updates `flake.lock`
 
 ## Example usage
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: mdarocha/nix-magic-setup@v1.0.0
+      - uses: mdarocha/nix-magic-setup@v1.1.0
       - run: nix flake check
 ```
 
