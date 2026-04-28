@@ -40,9 +40,8 @@ runs:
 
     - name: Setup direnv shell
       if: steps.check-envrc.outputs.exists == 'true'
-      uses: aldoborrero/direnv-nix-action@6f1d68ccf8d5477a1954e10464d169112d17dcd6 # v2
-      with:
-        use_nix_profile: true
+      shell: bash
+      run: bash "${{ github.action_path }}/scripts/setup-direnv.sh"
 
     - uses: mdarocha/comment-flake-lock-changelog@d476681db90d13c1aeda8df565543a47f67266ce # v1.0.0
       if: github.event_name == 'pull_request'
