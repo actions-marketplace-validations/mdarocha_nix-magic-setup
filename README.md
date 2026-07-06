@@ -14,6 +14,7 @@ single drop-in action.
 - Caching Nix derivations using [nix-community/cache-nix-action](https://github.com/nix-community/cache-nix-action)
 - Automagically setting up environments from `.envrc` using direnv
 - Commenting with [mdarocha/comment-flake-lock-changelog](https://github.com/mdarocha/comment-flake-lock-changelog) when a PR updates `flake.lock`
+- Optionally freeing up runner disk space before installing Nix using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix)
 
 ## Example usage
 
@@ -36,6 +37,28 @@ jobs:
       - uses: actions/checkout@v4
       - uses: mdarocha/nix-magic-setup@v1.1.0
       - run: nix flake check
+```
+
+## Configuration
+
+| Input             | Description                                                                                           | Default             |
+|--------------------|-------------------------------------------------------------------------------------------------------|----------------------|
+| `token`            | Github authentication token to use                                                                    | `${{ github.token }}` |
+| `free-up-storage`  | Free up disk space on the runner before installing Nix, using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix) | `false`              |
+
+### Freeing up storage
+
+GitHub Actions runners only have a small amount of free disk space available, which can be
+a problem for larger Nix builds. Setting `free-up-storage` to `true` runs
+[wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix) before Nix is
+installed, purging unneeded pre-installed software (like Docker images, browsers, and other
+language runtimes) from Ubuntu runners to make room for the Nix store. This only works on
+Ubuntu runners and is skipped gracefully on other platforms.
+
+```yaml
+- uses: mdarocha/nix-magic-setup@v1.1.0
+  with:
+    free-up-storage: true
 ```
 
 ## Permissions required
