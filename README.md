@@ -44,16 +44,16 @@ jobs:
 | Input             | Description                                                                                           | Default             |
 |--------------------|-------------------------------------------------------------------------------------------------------|----------------------|
 | `token`            | Github authentication token to use                                                                    | `${{ github.token }}` |
-| `free-up-storage`  | Aggressively free up disk space on the runner before installing Nix, using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix) | `false`              |
+| `free-up-all-storage` | Aggressively free up all possible disk space on the runner before installing Nix, using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix) | `false`              |
 
 ### Freeing up storage
 
 GitHub Actions runners only have a small amount of free disk space available, which can be
 a problem for larger Nix builds. This action always runs
 [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix) before Nix is
-installed to reclaim some disk space from Ubuntu runners. By default (`free-up-storage: false`)
+installed to reclaim some disk space from Ubuntu runners. By default (`free-up-all-storage: false`)
 it uses the `holster` protocol, which just claims free space without purging any pre-installed
-software. Setting `free-up-storage` to `true` switches to the `rampage` protocol, aggressively
+software. Setting `free-up-all-storage` to `true` switches to the `rampage` protocol, aggressively
 purging unneeded pre-installed software (like Docker images, browsers, and other language
 runtimes) to make the most room possible for the Nix store. This only works on Ubuntu runners
 and is skipped gracefully on other platforms.
@@ -61,7 +61,7 @@ and is skipped gracefully on other platforms.
 ```yaml
 - uses: mdarocha/nix-magic-setup@v1.1.0
   with:
-    free-up-storage: true
+    free-up-all-storage: true
 ```
 
 ## Permissions required
