@@ -8,9 +8,18 @@ inputs:
     description: "Github authentication token to use"
     required: false
     default: ${{ github.token }}
+  free-up-all-storage:
+    description: "Aggressively free up all possible disk space on the runner before installing Nix, using wimpysworld/nothing-but-nix. When false, a minimal amount of space is still reclaimed"
+    required: false
+    default: "false"
 runs:
   using: composite
   steps:
+    - name: Free up storage
+      uses: wimpysworld/nothing-but-nix@687c797a730352432950c707ab493fcc951818d7 # v10
+      with:
+        hatchet-protocol: ${{ inputs.free-up-all-storage == 'true' && 'rampage' || 'holster' }}
+
     - name: Install Nix
       uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
       with:
