@@ -7,17 +7,44 @@ source "$script_dir/lib/nix-config.sh"
 
 FLAKE_FILE="${GITHUB_WORKSPACE}/flake.nix"
 
-# devenv (https://devenv.sh) publishes its own binary cache so its tooling
-# doesn't have to be rebuilt from source on every run. Detect devenv the same
-# way it detects itself - a devenv.nix or devenv.yaml file at the repo root -
-# and always forward its recommended cache settings, matching what `devenv
-# init` itself writes into a project's flake.nix.
-devenv_config_json='{}'
+# devenv (https://devenv.sh) is used either via a devenv.nix/devenv.yaml at
+# the repo root, or purely through flake.nix - e.g. flake-parts' devenv
+# flakeModule, or calling devenv.lib.mkShell directly for `nix develop` -
+# with no devenv.nix file at all. Both flake-only forms depend on a flake
+# input pointing at cachix/devenv, so that covers detecting them too.
+# This only reads flake.nix's `inputs` attribute statically (same as
+# nixConfig below), so it still never fetches or evaluates any input.
+uses_devenv=false
 if [ -f "${GITHUB_WORKSPACE}/devenv.nix" ] || [ -f "${GITHUB_WORKSPACE}/devenv.yaml" ]; then
-    echo "devenv detected (devenv.nix/devenv.yaml found), adding devenv's recommended binary cache"
+    uses_devenv=true
+elif [ -f "$FLAKE_FILE" ]; then
+    input_urls_json=$(nix-instantiate --eval --strict --json --expr "
+        let inputs = (import \"$FLAKE_FILE\").inputs or {};
+        in builtins.attrValues (builtins.mapAttrs
+            (name: value: if builtins.isString value then value else value.url or \"\")
+            inputs)
+    ")
+    if jq -e 'any(.[]; test("cachix/devenv"))' <<< "$input_urls_json" > /dev/null; then
+        uses_devenv=true
+    fi
+fi
+
+# devenv publishes its own binary cache, plus the one for the pre-commit
+# hooks integration it bundles (see devenv's and git-hooks.nix's own
+# flake.nix), so its tooling doesn't have to be rebuilt from source on every
+# run. Always forward both once devenv is detected.
+devenv_config_json='{}'
+if [ "$uses_devenv" = true ]; then
+    echo "devenv detected, adding devenv's recommended binary caches"
     devenv_config_json=$(jq -n '{
-        "extra-substituters": ["https://devenv.cachix.org"],
-        "extra-trusted-public-keys": ["devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="]
+        "extra-substituters": [
+            "https://devenv.cachix.org",
+            "https://pre-commit-hooks.cachix.org"
+        ],
+        "extra-trusted-public-keys": [
+            "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=",
+            "pre-commit-hooks.cachix.org-1:Pkk3Panw5AW24TOv6kz3PvLhlH8puAsJTBbOPmBo7Rc="
+        ]
     }')
 fi
 

@@ -17,8 +17,10 @@ single drop-in action.
 - Freeing up runner disk space before installing Nix using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix)
 - Automatically setting `NIX_CONFIG` from your `flake.nix`'s `nixConfig`, so cache settings like
   `extra-substituters`/`extra-trusted-public-keys` don't need to be duplicated in the workflow
-- Automatically adding [devenv](https://devenv.sh)'s recommended binary cache to `NIX_CONFIG` when
-  a `devenv.nix`/`devenv.yaml` is found, merged together with any cache settings from `flake.nix`
+- Automatically adding [devenv](https://devenv.sh)'s recommended binary caches (including its
+  bundled pre-commit hooks integration) to `NIX_CONFIG` when devenv is detected - via a
+  `devenv.nix`/`devenv.yaml`, or a `flake.nix` input pointing at `cachix/devenv` - merged together
+  with any cache settings from `flake.nix`'s `nixConfig`
 
 ## Example usage
 
