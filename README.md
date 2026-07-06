@@ -14,6 +14,11 @@ single drop-in action.
 - Caching Nix derivations using [nix-community/cache-nix-action](https://github.com/nix-community/cache-nix-action)
 - Automagically setting up environments from `.envrc` using direnv
 - Commenting with [mdarocha/comment-flake-lock-changelog](https://github.com/mdarocha/comment-flake-lock-changelog) when a PR updates `flake.lock`
+- Automatically setting `NIX_CONFIG` from your `flake.nix`'s `nixConfig`, for a curated allowlist of
+  settings that don't affect trust (e.g. `max-jobs`, `cores`, `experimental-features`). Settings that
+  could redirect builds to untrusted caches or run arbitrary code (`substituters`, `trusted-public-keys`,
+  `*-hook`, etc.) are never applied automatically - set `NIX_CONFIG` yourself in your workflow if you
+  trust the repository's `flake.nix`
 
 ## Example usage
 
@@ -55,4 +60,3 @@ Certain features also only work in the context of a cloned repository, so they r
 In the future, this action is planned to also:
 - Comment on PRs with [nix-diff](https://github.com/Gabriella439/nix-diff)
 - Show stats like build times, cache hits vs. misses in GitHub Actions summaries
-- Automatically set up Nix config according to `nixConfig` flake keys
