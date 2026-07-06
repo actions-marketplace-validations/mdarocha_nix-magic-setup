@@ -15,6 +15,8 @@ single drop-in action.
 - Automagically setting up environments from `.envrc` using direnv
 - Commenting with [mdarocha/comment-flake-lock-changelog](https://github.com/mdarocha/comment-flake-lock-changelog) when a PR updates `flake.lock`
 - Freeing up runner disk space before installing Nix using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix)
+- Automatically setting `NIX_CONFIG` from your `flake.nix`'s `nixConfig`, so cache settings like
+  `extra-substituters`/`extra-trusted-public-keys` don't need to be duplicated in the workflow
 
 ## Example usage
 
@@ -81,4 +83,3 @@ Certain features also only work in the context of a cloned repository, so they r
 In the future, this action is planned to also:
 - Comment on PRs with [nix-diff](https://github.com/Gabriella439/nix-diff)
 - Show stats like build times, cache hits vs. misses in GitHub Actions summaries
-- Automatically set up Nix config according to `nixConfig` flake keys
