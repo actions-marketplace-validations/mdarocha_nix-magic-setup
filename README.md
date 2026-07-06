@@ -18,9 +18,7 @@ single drop-in action.
 - Automatically setting `NIX_CONFIG` from your `flake.nix`'s `nixConfig`, so cache settings like
   `extra-substituters`/`extra-trusted-public-keys` don't need to be duplicated in the workflow
 - Automatically adding [devenv](https://devenv.sh)'s recommended binary caches (including its
-  bundled pre-commit hooks integration) to `NIX_CONFIG` when devenv is detected - via a
-  `devenv.nix`/`devenv.yaml`, or a `flake.nix` input pointing at `cachix/devenv` - merged together
-  with any cache settings from `flake.nix`'s `nixConfig`
+  bundled pre-commit hooks integration) to `NIX_CONFIG` when devenv is detected
 
 ## Example usage
 
