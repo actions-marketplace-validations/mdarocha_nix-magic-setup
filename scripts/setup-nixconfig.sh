@@ -23,8 +23,17 @@ fi
 # Only forward settings Nix itself actually recognizes (by canonical name or
 # alias), the same set `nix.conf`/NIX_CONFIG would accept - this rejects
 # typos and made-up keys, it isn't a "safe subset" filter.
+# List-valued settings (substituters, trusted-public-keys, ...) also accept an
+# "extra-" prefixed form that appends instead of overriding - that prefix
+# isn't listed as a separate key or alias in `show-config`, so it's added here.
 known_keys_json=$(nix --extra-experimental-features nix-command show-config --json | jq -c '
-    [ to_entries[] | .key, (.value.aliases[]? // empty) ] | unique
+    [ to_entries[] |
+        [.key, (.value.aliases[]? // empty)] as $names |
+        if (.value.value | type) == "array"
+        then ($names + ($names | map("extra-" + .)))
+        else $names
+        end
+    ] | flatten | unique
 ')
 
 skipped=$(jq -r --argjson known "$known_keys_json" '
