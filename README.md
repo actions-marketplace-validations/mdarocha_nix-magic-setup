@@ -16,9 +16,7 @@ single drop-in action.
 - Commenting with [mdarocha/comment-flake-lock-changelog](https://github.com/mdarocha/comment-flake-lock-changelog) when a PR updates `flake.lock`
 - Freeing up runner disk space before installing Nix using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix)
 - Automatically setting `NIX_CONFIG` from your `flake.nix`'s `nixConfig`, so cache settings like
-  `extra-substituters`/`extra-trusted-public-keys` don't need to be duplicated in the workflow. This is
-  skipped (with a warning) when running against a pull request from a fork, since that flake.nix isn't
-  trusted to set values like binary cache substituters
+  `extra-substituters`/`extra-trusted-public-keys` don't need to be duplicated in the workflow
 
 ## Example usage
 
