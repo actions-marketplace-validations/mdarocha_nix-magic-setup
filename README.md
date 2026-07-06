@@ -15,11 +15,10 @@ single drop-in action.
 - Automagically setting up environments from `.envrc` using direnv
 - Commenting with [mdarocha/comment-flake-lock-changelog](https://github.com/mdarocha/comment-flake-lock-changelog) when a PR updates `flake.lock`
 - Freeing up runner disk space before installing Nix using [wimpysworld/nothing-but-nix](https://github.com/wimpysworld/nothing-but-nix)
-- Automatically setting `NIX_CONFIG` from your `flake.nix`'s `nixConfig`, for a curated allowlist of
-  settings that don't affect trust (e.g. `max-jobs`, `cores`, `experimental-features`). Settings that
-  could redirect builds to untrusted caches or run arbitrary code (`substituters`, `trusted-public-keys`,
-  `*-hook`, etc.) are never applied automatically - set `NIX_CONFIG` yourself in your workflow if you
-  trust the repository's `flake.nix`
+- Automatically setting `NIX_CONFIG` from your `flake.nix`'s `nixConfig`, so cache settings like
+  `extra-substituters`/`extra-trusted-public-keys` don't need to be duplicated in the workflow. This is
+  skipped (with a warning) when running against a pull request from a fork, since that flake.nix isn't
+  trusted to set values like binary cache substituters
 
 ## Example usage
 

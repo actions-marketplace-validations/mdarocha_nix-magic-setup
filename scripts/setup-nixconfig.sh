@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# nixConfig can set values like extra-substituters/extra-trusted-public-keys
+# that redirect builds to a binary cache or change what signatures are
+# trusted. Applying those from an untrusted flake.nix is exactly what Nix's
+# own accept-flake-config prompt guards against, so only do this when the
+# flake.nix is as trusted as the workflow run itself: i.e. not a pull_request
+# from a fork. Any other trigger (push, workflow_dispatch, schedule, or a
+# pull_request from a branch of this same repository) runs with the repo's
+# own flake.nix and is fine.
+event_name="${GITHUB_EVENT_NAME:-}"
+if [ "$event_name" = "pull_request" ] || [ "$event_name" = "pull_request_target" ]; then
+    head_repo=$(jq -r '.pull_request.head.repo.full_name // ""' "${GITHUB_EVENT_PATH:?}")
+    if [ "$head_repo" != "${GITHUB_REPOSITORY:-}" ]; then
+        echo "::warning::Skipping nixConfig setup from flake.nix: this is a pull_request from a fork (${head_repo:-unknown}), so its flake.nix isn't trusted to set NIX_CONFIG (e.g. binary cache substituters). Set NIX_CONFIG explicitly in your workflow if you need it here."
+        exit 0
+    fi
+fi
+
 FLAKE_FILE="${GITHUB_WORKSPACE}/flake.nix"
 
 if [ ! -f "$FLAKE_FILE" ]; then
@@ -18,51 +35,11 @@ if [ "$config_json" = "{}" ]; then
     exit 0
 fi
 
-# Nix itself only applies a flake's nixConfig when accept-flake-config is set,
-# because it can otherwise be used to redirect builds to untrusted binary
-# caches, disable signature checks, or run arbitrary hooks/plugins - all from
-# a flake.nix that may come from an untrusted PR. Rather than trust every
-# flake wholesale, only forward a fixed allowlist of settings that don't
-# affect trust and can't execute code.
-allowed_keys=(
-    bash-prompt
-    bash-prompt-prefix
-    bash-prompt-suffix
-    connect-timeout
-    cores
-    download-attempts
-    experimental-features
-    extra-experimental-features
-    fallback
-    http-connections
-    keep-derivations
-    keep-outputs
-    max-jobs
-    narinfo-cache-negative-ttl
-    narinfo-cache-positive-ttl
-    show-trace
-    stalled-download-timeout
-    tarball-ttl
-    warn-dirty
-)
-
+# Forward every setting as-is, matching what Nix itself would read from
+# nixConfig - the point is to avoid duplicating cache config (substituters,
+# trusted-public-keys, etc.) between flake.nix and the workflow.
 lines=""
-skipped=()
-
 while IFS=$'\t' read -r key value; do
-    allowed=false
-    for allowed_key in "${allowed_keys[@]}"; do
-        if [ "$key" = "$allowed_key" ]; then
-            allowed=true
-            break
-        fi
-    done
-
-    if [ "$allowed" = false ]; then
-        skipped+=("$key")
-        continue
-    fi
-
     echo "Applying nixConfig.$key from flake.nix"
     lines+="$key = $value"$'\n'
 done < <(printf '%s' "$config_json" | jq -r '
@@ -73,15 +50,6 @@ done < <(printf '%s' "$config_json" | jq -r '
                   else tostring end)
     ] | @tsv
 ')
-
-if [ ${#skipped[@]} -gt 0 ]; then
-    echo "::notice::Skipped security-relevant nixConfig setting(s) from flake.nix: ${skipped[*]}. Set NIX_CONFIG in your workflow yourself if you trust this repository's flake.nix."
-fi
-
-if [ -z "$lines" ]; then
-    echo "No safe nixConfig settings to apply"
-    exit 0
-fi
 
 # Preserve any NIX_CONFIG already set earlier in the workflow.
 delim="nix_config_delim_$(openssl rand -hex 16)"
