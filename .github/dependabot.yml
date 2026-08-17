@@ -1,11 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "friday"
+      interval: weekly
+      day: friday
       time: "21:00"
-      timezone: "Etc/UTC"
+      timezone: Etc/UTC
     labels:
-      - "automated"
+      - automated

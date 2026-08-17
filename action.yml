@@ -8,13 +8,26 @@ inputs:
     description: "Github authentication token to use"
     required: false
     default: ${{ github.token }}
+  free-up-all-storage:
+    description: "Aggressively free up all possible disk space on the runner before installing Nix, using wimpysworld/nothing-but-nix. When false, a minimal amount of space is still reclaimed"
+    required: false
+    default: "false"
 runs:
   using: composite
   steps:
+    - name: Free up storage
+      uses: wimpysworld/nothing-but-nix@687c797a730352432950c707ab493fcc951818d7 # v10
+      with:
+        hatchet-protocol: ${{ inputs.free-up-all-storage == 'true' && 'rampage' || 'holster' }}
+
     - name: Install Nix
-      uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934 # v31.10.1
+      uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
       with:
         github_access_token: ${{ inputs.token }}
+
+    - name: Setup nixConfig from flake.nix
+      shell: bash
+      run: bash "${{ github.action_path }}/scripts/setup-nixconfig.sh"
 
     - name: Setup Nix Cache
       uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
@@ -40,11 +53,10 @@ runs:
 
     - name: Setup direnv shell
       if: steps.check-envrc.outputs.exists == 'true'
-      uses: aldoborrero/direnv-nix-action@6f1d68ccf8d5477a1954e10464d169112d17dcd6 # v2
-      with:
-        use_nix_profile: true
+      shell: bash
+      run: bash "${{ github.action_path }}/scripts/setup-direnv.sh"
 
-    - uses: mdarocha/comment-flake-lock-changelog@d476681db90d13c1aeda8df565543a47f67266ce # v1.0.0
+    - uses: mdarocha/comment-flake-lock-changelog@709edb53d1a4937e9792876a036671f3316f1186 # v1.0.2
       if: github.event_name == 'pull_request'
       with:
         pull-request-number: ${{ github.event.pull_request.number }}
